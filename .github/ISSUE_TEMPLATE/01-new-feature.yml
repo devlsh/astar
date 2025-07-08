@@ -1,0 +1,11 @@
+name: New feature
+description: Empty issue with defaults for features
+title: "[feat] "
+labels: ["feature"]
+assignees: devlsh
+body:
+  - type: textarea
+    attributes:
+      label: Feature description
+    validations:
+      required: false

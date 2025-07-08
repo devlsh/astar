@@ -1,0 +1,68 @@
+{
+  "commit_type": {
+    "initial_value": "feat",
+    "append_emoji_to_label": true,
+    "append_emoji_to_commit": true,
+    "options": [
+      {
+        "value": "feat",
+        "label": "feature",
+        "hint": "added a new feature",
+        "emoji": "✨"
+      },
+      {
+        "value": "fix",
+        "label": "fix",
+        "hint": "fixed a bug/issue",
+        "emoji": "🐛"
+      },
+      {
+        "value": "refactor",
+        "label": "refactor",
+        "hint": "refactored existing code",
+        "emoji": "🔨"
+      },
+      {
+        "value": "perf",
+        "label": "performance",
+        "hint": "performance-focussed improvement",
+        "emoji": "🚀"
+      },
+      {
+        "value": "test",
+        "label": "test",
+        "hint": "added new tests or modified existing tests",
+        "emoji": "🚨"
+      },
+      {
+        "value": "ci",
+        "label": "ci",
+        "hint": "changes to ci/cd workflows",
+        "emoji": "🤖"
+      },
+      {
+        "value": "chore",
+        "label": "chore",
+        "hint": "clean-up, updating dependencies or other tasks",
+        "emoji": "🧹"
+      }
+    ]
+  },
+  "commit_scope": {
+    "enable": false
+  },
+  "commit_body": {
+    "enable": false
+  },
+  "commit_footer": {
+    "options": ["closes", "breaking-change"]
+  },
+  "check_ticket": {
+    "prepend_hashtag": "Always",
+    "title_position": "end"
+  },
+  "branch_user": {
+    "enable": false
+  },
+  "enable_worktrees": false
+}

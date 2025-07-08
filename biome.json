@@ -1,0 +1,111 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.1.1/schema.json",
+  "assist": {
+    "enabled": true,
+    "actions": {
+      "source": {
+        "organizeImports": {
+          "level": "on",
+          "options": {
+            "groups": [":NODE:", ":PACKAGE:", ":ALIAS:", ":PATH:", "**"]
+          }
+        },
+        "useSortedAttributes": "off",
+        "useSortedKeys": "off"
+      }
+    }
+  },
+  "css": {
+    "formatter": {
+      "enabled": true,
+      "quoteStyle": "single"
+    }
+  },
+  "files": {
+    "includes": [
+      "**",
+      "!biome.json",
+      "!**/tsconfig.json",
+      "!**/tsconfig.*.json",
+      "!**/package.json",
+      "!.vscode/**",
+      "!**/out",
+      "!**/release",
+      "!**/dist",
+      "!**/build",
+      "!**/node_modules",
+      "!**/tsconfig.tsbuildinfo",
+      "!**/tsconfig.*.tsbuildinfo"
+    ]
+  },
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineEnding": "lf",
+    "lineWidth": 160
+  },
+  "html": {
+    "formatter": {
+      "enabled": false
+    }
+  },
+  "javascript": {
+    "formatter": {
+      "enabled": true,
+      "jsxQuoteStyle": "double",
+      "quoteStyle": "single"
+    }
+  },
+  "json": {
+    "formatter": {
+      "enabled": true
+    }
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "a11y": {
+        "useMediaCaption": "off"
+      },
+      "complexity": {
+        "noBannedTypes": "off",
+        "noStaticOnlyClass": "off",
+        "noUselessEmptyExport": "off"
+      },
+      "correctness": {
+        "noUnusedImports": {
+          "level": "error",
+          "fix": "safe"
+        },
+        "useExhaustiveDependencies": "off"
+      },
+      "recommended": true,
+      "style": {
+        "noInferrableTypes": "error",
+        "noNonNullAssertion": "off",
+        "noParameterAssign": "error",
+        "noUnusedTemplateLiteral": "error",
+        "noUselessElse": "error",
+        "useAsConstAssertion": "error",
+        "useDefaultParameterLast": "error",
+        "useEnumInitializers": "error",
+        "useExportType": "off",
+        "useNumberNamespace": "error",
+        "useSelfClosingElements": "error",
+        "useSingleVarDeclarator": "error"
+      },
+      "suspicious": {
+        "noArrayIndexKey": "off",
+        "noConfusingVoidType": "off",
+        "noExplicitAny": "off"
+      }
+    }
+  },
+  "vcs": {
+    "enabled": false,
+    "clientKind": "git",
+    "defaultBranch": "main",
+    "useIgnoreFile": true
+  }
+}

@@ -1,4 +1,4 @@
-import type * as heuristics from '@/heuristics';
+import type * as heuristics from './heuristics';
 
 export interface TileBuilder {
   elevation: number;

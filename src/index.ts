@@ -1,5 +1,4 @@
-import * as heuristics from '@/heuristics';
-
+import * as heuristics from './heuristics';
 import type { Neighbor, OpenTile, Score, ScoreOptions, SearchOptions, TileBuilderCache, Vector } from './types';
 
 export function search(options: SearchOptions) {
@@ -17,7 +16,9 @@ export function search(options: SearchOptions) {
   // Calculate grid limits.
   if (!Array.isArray(options.grid)) {
     throw new Error('non-array grid provided');
-  } else if (!options.grid.length || !Array.isArray(options.grid[0])) {
+  }
+
+  if (!options.grid.length || !Array.isArray(options.grid[0])) {
     throw new Error('2 dimensional grid array required');
   }
 
@@ -34,7 +35,12 @@ export function search(options: SearchOptions) {
       return tileCache[id];
     }
 
-    const rawValue = options.grid[vector[1]][vector[0]];
+    const rawValue = options.grid[vector[1]]?.[vector[0]];
+
+    if (rawValue === undefined) {
+      throw new Error('Grid value is undefined');
+    }
+
     let value: TileBuilderCache;
 
     if (typeof rawValue === 'number') {
@@ -84,12 +90,7 @@ export function search(options: SearchOptions) {
         // If this is an illegal tile, make sure it's not detination if that's allowed.
         (tile(cell).validAsDestination !== true || cell[0] !== options.to[0] || cell[1] !== options.to[1])) ||
       // This is either the starting (illegal) tile, or...
-      (!(
-        origin[0] === options.from[0] &&
-        origin[1] === options.from[1] &&
-        !tile(options.from).isLegal &&
-        !tile(options.from).validAsDestination
-      ) &&
+      (!(origin[0] === options.from[0] && origin[1] === options.from[1] && !tile(options.from).isLegal && !tile(options.from).validAsDestination) &&
         // ...make sure the elevation difference is allowed.
         (tile(cell).elevation - tile(origin).elevation > step || tile(cell).elevation - tile(origin).elevation < -step))
     );
@@ -101,11 +102,16 @@ export function search(options: SearchOptions) {
 
     for (let i = 0; i < total; i++) {
       const neighbor = tiles[i];
+
+      if (!neighbor) {
+        continue;
+      }
+
       const name = vectorId(neighbor[0]);
 
       // If the tile is usable, push it to the list.
       if (canUse(neighbor, from[0])) {
-        const existing = open.find(item => vectorId(item[0]) === name);
+        const existing = open.find((item) => vectorId(item[0]) === name);
         const currentScore = score({
           current: neighbor[0],
           parent: from,
@@ -117,7 +123,7 @@ export function search(options: SearchOptions) {
         if (existing && currentScore.f < existing[1].f) {
           const existingName = vectorId(existing[0]);
 
-          open = open.map(existingTile => {
+          open = open.map((existingTile) => {
             if (vectorId(existingTile[0]) === existingName) {
               existingTile[1] = currentScore;
               existingTile[2] = from;
@@ -229,8 +235,8 @@ export function neighbors(vector: Vector, diagonals = false) {
 }
 
 export function score(options: ScoreOptions) {
-  let g = options.parent[1].g + 1;
-  let h = heuristics[options.heuristic](options.current, options.goal);
+  const g = options.parent[1].g + 1;
+  const h = heuristics[options.heuristic](options.current, options.goal);
 
   return { g, h, f: g + h } as Score;
 }
@@ -242,7 +248,8 @@ export function vectorId(vector: Vector) {
 export function asc(a: number, b: number) {
   if (a > b) {
     return 1;
-  } else if (a < b) {
+  }
+  if (a < b) {
     return -1;
   }
 
