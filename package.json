@@ -1,6 +1,6 @@
 {
   "type": "module",
-  "name": "@evilkiwi/astar",
+  "name": "@devlsh/astar",
   "version": "4.0.0",
   "sideEffects": false,
   "packageManager": "pnpm@10.12.4",
@@ -26,13 +26,13 @@
     "url": "https://evil.kiwi",
     "email": "support@evil.kiwi"
   },
-  "homepage": "https://github.com/evilkiwi/astar",
+  "homepage": "https://github.com/devlsh/astar",
   "bugs": {
-    "url": "https://github.com/evilkiwi/astar/issues"
+    "url": "https://github.com/devlsh/astar/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/evilkiwi/astar.git"
+    "url": "git+https://github.com/devlsh/astar.git"
   },
   "keywords": [
     "a",
@@ -49,6 +49,7 @@
     "test:coverage": "vitest run --coverage",
     "test:watch": "vitest watch",
     "test": "vitest run",
+    "test:package": "pnpm build && node scripts/verify-package.mjs",
     "typecheck": "tsc --noEmit --incremental"
   },
   "devDependencies": {

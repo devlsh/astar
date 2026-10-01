@@ -1,12 +1,12 @@
 <div align="center">
-  <a href="https://www.npmjs.com/package/@evilkiwi/astar" target="_blank">
-    <img src="https://img.shields.io/npm/v/@evilkiwi/astar?style=flat-square" alt="NPM" />
+  <a href="https://www.npmjs.com/package/@devlsh/astar" target="_blank">
+    <img src="https://img.shields.io/npm/v/@devlsh/astar?style=flat-square" alt="NPM" />
   </a>
-  <img src="https://img.shields.io/npm/l/@evilkiwi/astar?style=flat-square" alt="GPL-3.0-only" />
+  <img src="https://img.shields.io/npm/l/@devlsh/astar?style=flat-square" alt="GPL-3.0-only" />
   <h3>Synchronous A* pathfinding for TypeScript.</h3>
 </div>
 
-`@evilkiwi/astar` is an synchronous A* pathfinding implementation in TypeScript.
+`@devlsh/astar` is an synchronous A* pathfinding implementation in TypeScript.
 
 - Supports diagonal or manhattan heuristics
 - Optionally supports 3-dimensional grids with elevation
@@ -18,13 +18,13 @@
 ## Installation
 
 ```bash
-npm install @evilkiwi/astar
+npm install @devlsh/astar
 ```
 
 ## Usage
 
 ```typescript
-import { search, type Grid } from '@evilkiwi/astar';
+import { search, type Grid } from '@devlsh/astar';
 
 /**
  * The first step is to have a Grid.
