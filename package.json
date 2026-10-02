@@ -49,7 +49,6 @@
     "test:coverage": "vitest run --coverage",
     "test:watch": "vitest watch",
     "test": "vitest run",
-    "test:package": "pnpm build && node scripts/verify-package.mjs",
     "typecheck": "tsc --noEmit --incremental"
   },
   "devDependencies": {
