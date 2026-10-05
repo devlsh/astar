@@ -1,7 +1,7 @@
 {
   "$schema": "https://json.schemastore.org/package.json",
   "name": "@devlsh/astar",
-  "version": "4.0.0",
+  "version": "5.0.0",
   "description": "A* pathfinding for 2D grids with elevation support.",
   "keywords": [
     "2d",
