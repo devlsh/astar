@@ -1,47 +1,13 @@
 {
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "@tsconfig/node24/tsconfig.json",
   "compilerOptions": {
-    "target": "ES2022",
-    "lib": ["ES2022"],
-    "module": "ESNext",
+    "module": "esnext",
     "moduleResolution": "bundler",
-    "allowSyntheticDefaultImports": true,
-    "esModuleInterop": true,
-    "resolveJsonModule": true,
-
-    "declaration": true,
-    "declarationMap": true,
-    "sourceMap": true,
-    "outDir": "./dist",
-    "rootDir": "./src",
-    "removeComments": true,
-    "importHelpers": false,
-
-    "strict": true,
-    "noImplicitAny": true,
-    "noImplicitThis": true,
-    "noImplicitOverride": true,
-    "noUncheckedIndexedAccess": true,
-    "noFallthroughCasesInSwitch": true,
-    "noImplicitReturns": true,
-    "noPropertyAccessFromIndexSignature": true,
-    "useUnknownInCatchVariables": true,
-    "exactOptionalPropertyTypes": true,
-
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "allowUnreachableCode": false,
-    "allowUnusedLabels": false,
-
-    "skipLibCheck": false,
-    "forceConsistentCasingInFileNames": true,
-    "isolatedModules": true,
-    "allowImportingTsExtensions": false,
-    "allowArbitraryExtensions": false,
-
-    "noEmit": false,
-    "preserveConstEnums": true,
-    "preserveSymlinks": true
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
+    "rootDir": ".",
+    "types": ["node", "vitest/globals"]
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.spec.ts", "example/**/*"]
+  "include": ["src", "tests", "*.config.ts"]
 }

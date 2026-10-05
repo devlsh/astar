@@ -1,8 +1,5 @@
 # logs.
 *.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
 
 # runtime.
 pids
@@ -13,42 +10,42 @@ pids
 # code coverage results.
 coverage
 
-# node-waf configuration.
-.lock-wscript
-
 # node addon binaries (https://nodejs.org/api/addons.html).
 build/Release
 
 # node modules.
 node_modules/
 
-# typechecking caches.
-tsconfig.tsbuildinfo
-tsconfig.*.tsbuildinfo
-
-# npm cache.
-.npm
-
-# packed outputs.
+# outputs.
+dist/
 *.tgz
 
 # dotenv.
 .env
 
-# parcel-bundler cache (https://parceljs.org/).
-.cache
-
-# macos bullshittery.
+# macos stuff.
 .DS_Store
 
 # vim swap files.
 *.swp
 
-# vite.
+# vite(st).
 .vite
+.vitest
 
-# turborepo.
+# devenv.
+.devenv/
+.direnv/
+
+# turbo.
 .turbo
 
-# build output.
-dist
+# typescript.
+*.tsbuildinfo
+
+# local agent workflow artifacts.
+.worktrees/
+.scratch/
+/research
+/docs/plans
+/plans

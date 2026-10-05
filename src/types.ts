@@ -1,4 +1,4 @@
-import type * as heuristics from './heuristics';
+import { type BuiltinHeuristic, type Heuristic } from './heuristics';
 
 export interface TileBuilder {
   elevation: number;
@@ -9,7 +9,9 @@ export interface TileBuilder {
 export type TileBuilderCache = Omit<TileBuilder, 'isLegal'> & Required<Pick<TileBuilder, 'isLegal'>>;
 
 export type Tile = TileBuilder | number;
+
 export type Grid = Tile[][];
+
 export type Vector = [number, number];
 
 export interface Score {
@@ -24,16 +26,17 @@ export interface ScoreOptions {
   current: Vector;
   parent: OpenTile;
   goal: Vector;
-  heuristic: keyof typeof heuristics;
+  heuristic: BuiltinHeuristic | Heuristic;
 }
 
 export interface SearchOptions {
   from: Vector;
   to: Vector;
   grid: Grid;
-  heuristic?: keyof typeof heuristics;
+  heuristic?: BuiltinHeuristic | Heuristic;
   diagonal?: boolean;
   cutCorners?: boolean;
+
   /**
    * When defing a grid with elevation, this is the max distance
    * that can be stepped up/down. Defaults to `1`.

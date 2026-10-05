@@ -1,0 +1,21 @@
+body {
+  margin: 0;
+  overflow: hidden;
+  background: #d4b5f1;
+}
+
+#canvas {
+  position: fixed;
+  inset: 0;
+}
+
+#canvas canvas {
+  display: block;
+  touch-action: none;
+}
+
+.lil-gui.lil-root.lil-auto-place {
+  max-inline-size: calc(100vw - 32px);
+  top: max(8px, env(safe-area-inset-top));
+  right: max(8px, env(safe-area-inset-right));
+}
