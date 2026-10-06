@@ -65,6 +65,63 @@ pnpm demo build
 
 For demo behavior changes, run `pnpm demo dev` and inspect the affected controls, terrain and endpoint edits, search options, resizing, and cleanup in the browser. See the [demo guide](demo/README.md) for its controls. Library checks do not replace demo checks.
 
+## Benchmarks
+
+The native Vitest benchmark measures the minified package export, not transformed source. Build current source before each benchmark session:
+
+```sh
+pnpm build
+```
+
+Run either portfolio with the direct Vitest conveniences:
+
+```sh
+pnpm bench:quick
+pnpm bench:full
+```
+
+Quick has 12 workloads and 48 prebuilt inputs. Full has 27 workloads and 108 prebuilt inputs. Each workload has four deterministic rotations. Benchmarks measure performance only and do not validate path correctness.
+
+Domain files in `bench/fixtures/` declare grid factories and search options. The shared portfolio creates fresh grids and endpoint copies before it prepares the four rotations. Stable workload IDs identify reference files. A changed workload needs a new ID and a new comparison series.
+
+Run the quick cases with an adjacent target:
+
+```sh
+pnpm bench:quick --reporter=default -t 'Adjacent target'
+```
+
+Run `pnpm test` for the existing library correctness tests. These tests use the source public export and need no build.
+
+The initial settings are provisional minimum floors, not deadlines:
+
+- Quick: 250 ms warmup, at least 16 warmup iterations, 250 ms measurement, and at least 32 measured iterations.
+- Full: 1,000 ms warmup, at least 64 warmup iterations, 1,000 ms measurement, and at least 64 measured iterations.
+
+The process targets are approximately 10 seconds and 60 seconds. Slow callbacks can exceed these targets to reach the iteration floors. Do not reduce existing workloads or change production code to meet these targets.
+
+Each native result measures a batch of four searches. Native `hz` counts batches per second. Native p99 describes a batch, not a single search. The four rotations are inputs, not independent statistical samples. Allocation and normal GC remain inside search timings.
+
+Divide mean latency by four for mean latency per search. Multiply native `hz` by four for searches per second.
+
+Capture a local reference only when you intend to create or replace it. Then display the native comparison:
+
+```sh
+pnpm bench:quick --mode capture
+pnpm bench:quick --mode compare --reporter=default
+```
+
+Use `bench:full` instead of `bench:quick` for a full reference.
+
+Check warmup sensitivity with the same unchanged build:
+
+```sh
+pnpm bench:quick --mode double-warmup --reporter=default
+```
+
+This mode doubles warmup time without changing measurement floors or reference files.
+
+Use `bench:full` for the full control. Repeat ordinary runs manually on a quiet host. Inspect sample counts and spread across fresh processes.
+
 ## Pull Requests
 
 Search existing issues and PRs before proposing duplicate work. Keep your change focused and update affected callers, tests, [README examples](README.md#usage), and contributor instructions together.

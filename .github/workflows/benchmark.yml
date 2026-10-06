@@ -1,0 +1,58 @@
+name: "📊 benchmark"
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: benchmark-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  benchmark:
+    name: "📊 compare benchmarks"
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+
+    steps:
+      - name: "📥 check out head"
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+
+      - name: "⚙️ set up node and pnpm"
+        uses: devlsh/tools/github/setup@5a43d10d4535a7cf1368acd9313e70d417ac6235
+
+      - name: "📥 check out base"
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: ${{ github.event.pull_request.base.repo.full_name }}
+          ref: ${{ github.event.pull_request.base.sha }}
+          path: benchmark-base
+          persist-credentials: false
+
+      - name: "📥 install base dependencies"
+        working-directory: benchmark-base
+        run: pnpm install --frozen-lockfile
+
+      - name: "📦 build base"
+        working-directory: benchmark-base
+        run: pnpm build
+
+      - name: "📂 stage base output"
+        run: |
+          mkdir -p dist
+          cp -R benchmark-base/dist/. dist/
+
+      - name: "📊 capture base benchmark"
+        run: pnpm bench:full --mode capture --reporter=default
+
+      - name: "📦 build head"
+        run: pnpm build
+
+      - name: "📊 compare benchmark"
+        run: pnpm bench:full --mode compare --reporter=default --reporter=github-actions

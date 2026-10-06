@@ -9,5 +9,5 @@
     "rootDir": ".",
     "types": ["node", "vitest/globals"]
   },
-  "include": ["src", "tests", "*.config.ts"]
+  "include": ["src", "tests", "bench", "*.config.ts"]
 }
