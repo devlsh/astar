@@ -16,10 +16,10 @@ const mode = inject('benchmarkMode');
 const search = publicSearch;
 
 const config = {
-  warmupTime: (selection === 'quick' ? 250 : 1000) * (mode === 'double-warmup' ? 2 : 1),
-  warmupIterations: selection === 'quick' ? 16 : 64,
-  time: selection === 'quick' ? 250 : 1000,
-  iterations: selection === 'quick' ? 32 : 64,
+  warmupTime: 250 * (mode === 'double-warmup' ? 2 : 1),
+  warmupIterations: selection === 'quick' ? 16 : 4,
+  time: 250,
+  iterations: 32,
 };
 
 const workloads = fixtures();

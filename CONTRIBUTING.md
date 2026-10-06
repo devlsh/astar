@@ -95,9 +95,9 @@ Run `pnpm test` for the existing library correctness tests. These tests use the 
 The initial settings are provisional minimum floors, not deadlines:
 
 - Quick: 250 ms warmup, at least 16 warmup iterations, 250 ms measurement, and at least 32 measured iterations.
-- Full: 1,000 ms warmup, at least 64 warmup iterations, 1,000 ms measurement, and at least 64 measured iterations.
+- Full: 250 ms warmup, at least 4 warmup iterations, 250 ms measurement, and at least 32 measured iterations.
 
-The process targets are approximately 10 seconds and 60 seconds. Slow callbacks can exceed these targets to reach the iteration floors. Do not reduce existing workloads or change production code to meet these targets.
+The process targets are approximately 10 seconds and 60 seconds. Slow callbacks can exceed these targets to reach the iteration floors. Full uses fewer samples to reduce benchmark compute cost, with less statistical precision. These settings do not guarantee a total runtime or change any timeout. Do not reduce existing workloads or change production code to meet these targets.
 
 Each native result measures a batch of four searches. Native `hz` counts batches per second. Native p99 describes a batch, not a single search. The four rotations are inputs, not independent statistical samples. Allocation and normal GC remain inside search timings.
 
@@ -111,6 +111,10 @@ pnpm bench:quick --mode compare --reporter=default
 ```
 
 Use `bench:full` instead of `bench:quick` for a full reference.
+
+When full sampling settings change, capture a fresh local full reference before comparison, even when workload IDs stay unchanged.
+
+Native reference files do not record sampling settings, so comparison cannot detect this mismatch. Quick references need no replacement for a full-only sampling change. CI captures a fresh base reference with the head harness for each paired run.
 
 Check warmup sensitivity with the same unchanged build:
 
