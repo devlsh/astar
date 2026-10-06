@@ -4,6 +4,9 @@
   "compilerOptions": {
     "module": "esnext",
     "moduleResolution": "bundler",
+    "paths": {
+      "@devlsh/astar": ["./src/index.ts"]
+    },
     "allowImportingTsExtensions": true,
     "noEmit": true,
     "rootDir": ".",
