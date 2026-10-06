@@ -29,7 +29,7 @@ jobs:
           persist-credentials: false
 
       - name: "⚙️ set up node and pnpm"
-        uses: ./.github/actions/setup-node-pnpm
+        uses: devlsh/tools/github/setup@5a43d10d4535a7cf1368acd9313e70d417ac6235
 
       - name: "✅ run checks"
         run: pnpm check
@@ -66,7 +66,7 @@ jobs:
           persist-credentials: false
 
       - name: "⚙️ set up node and pnpm"
-        uses: ./.github/actions/setup-node-pnpm
+        uses: devlsh/tools/github/setup@5a43d10d4535a7cf1368acd9313e70d417ac6235
 
       - name: "📦 build demo"
         run: pnpm demo build

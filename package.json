@@ -45,6 +45,8 @@
     "access": "public"
   },
   "scripts": {
+    "bench:full": "vitest bench --run --config bench.config.ts --project 'full (bench)'",
+    "bench:quick": "vitest bench --run --config bench.config.ts --project 'quick (bench)'",
     "build": "tsdown",
     "check": "pnpm typecheck && pnpm lint && pnpm fmt:check",
     "demo": "pnpm --filter @devlsh/astar-demo",

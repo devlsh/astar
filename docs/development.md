@@ -100,7 +100,15 @@ Inspect manifest scripts/composition; keep related scripts/config/lock changes t
 
 [Demo instructions](../demo/AGENTS.md) own the canvas consumer, lifecycle, and deployment packaging. The demo imports library source, not package output. [demo.yml](../.github/workflows/demo.yml) owns credential-free demo validation and main-only deployment through the `production` environment. Local configuration does not prove hosted readiness or authorize deployment. Refresh this routing when the demo owners or check composition change.
 
-[validate.yml](../.github/workflows/validate.yml) owns CI; [setup-node-pnpm](../.github/actions/setup-node-pnpm/action.yml) selects native `devEngines`/frozen installation with hook setup on cache hits. CI runs without Nix/devenv; local setup remains unchanged. Local workflows prove neither hosted protection/required checks nor OIDC readiness; refresh projections when executable owners change.
+[validate.yml](../.github/workflows/validate.yml) owns ordinary CI validation. CI runs without Nix/devenv. Local setup remains unchanged.
+
+The PR-only [benchmark.yml](../.github/workflows/benchmark.yml) owns paired benchmark execution, separate from validation. Its benchmark job captures the event base and compares the event head on one runner with the head harness. Each revision uses its own frozen lockfile under the head-selected toolchain.
+
+Native reference and candidate files stay in the job workspace, with no uploads or measurement history. The **📊 compare benchmarks** job output shows the native comparison table. Capture uses the native default reporter. Comparison explicitly selects the native default and GitHub Actions reporters. The GitHub Actions reporter supplies failure annotations and a test summary, not benchmark metrics in the job summary. The ordinary validation job remains separate. Pins, permissions, and steps belong to the workflow, not this projection.
+
+Reserve `.scratch/` for local development, never CI.
+
+Local workflows do not prove hosted protection, required checks, or OIDC readiness. Refresh these projections when their executable owners change.
 
 ### Validation Selection
 
@@ -111,6 +119,7 @@ Select cumulatively by change type and every affected interface. Repository comm
 - **Pathfinding** - At the public seam, exercise affected grid validation, cardinal/diagonal movement, corner cutting, elevation limits, built-in/custom heuristics, illegal destinations, and null paths. [tests/astar.test.ts](../tests/astar.test.ts) owns established search behavior checks. Use `pnpm test -- tests` and full `pnpm test`; refresh this selection when search contracts change.
 - **Demo** - Add [scoped checks](../demo/AGENTS.md#checks) for affected controls, terrain and endpoint edits, search feedback, resizing, and lifecycle; library checks do not replace them.
 - **Packaging** - `pnpm build` for changed entrypoints, output/declarations, or built consumer imports, not default static validation.
+- **Benchmarks** - [CONTRIBUTING benchmarks](../CONTRIBUTING.md#benchmarks) owns native commands, fixture descriptors, capture/compare files, interpretation, and paired CI transfer limits. [bench.config.ts](../bench.config.ts) owns quick/full projects and limits benchmark discovery to root `bench/**/*.bench.ts` files. This scope excludes the nested CI base checkout without custom exclusion patterns. [bench/search.bench.ts](../bench/search.bench.ts) measures the built public export without path-correctness validation. Build current source before local benchmarks. Root typechecking includes `bench`, and `pnpm test` owns existing correctness checks. No custom runner, thresholds, correctness preflight, or production optimization belongs to benchmark work.
 - **Source/exports** - Typecheck/behavior plus consumer checks for imports/exports/shared types/values.
 - **Tooling** - Exercise accepted/rejected inputs and fixes through the tool; types do not prove diagnostics.
 - **Generated contracts** - Regenerate from source and verify every affected consumer, not only producer.

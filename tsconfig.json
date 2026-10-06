@@ -4,10 +4,13 @@
   "compilerOptions": {
     "module": "esnext",
     "moduleResolution": "bundler",
+    "paths": {
+      "@devlsh/astar": ["./src/index.ts"]
+    },
     "allowImportingTsExtensions": true,
     "noEmit": true,
     "rootDir": ".",
     "types": ["node", "vitest/globals"]
   },
-  "include": ["src", "tests", "*.config.ts"]
+  "include": ["src", "tests", "bench", "*.config.ts"]
 }
