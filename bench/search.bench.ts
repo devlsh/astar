@@ -1,17 +1,21 @@
 import { search as publicSearch } from '@devlsh/astar';
 import { inject, test } from 'vitest';
+import { baselineFrom } from './baseline';
 import { fixtures, select, type Suite } from './fixtures';
 
 declare module 'vitest' {
   interface ProvidedContext {
     benchmarkSuite: Suite;
     benchmarkMode: string;
+    benchmarkBaseline: string | null;
   }
 }
 
 const selection = inject('benchmarkSuite');
 
 const mode = inject('benchmarkMode');
+
+const baselineDirectory = inject('benchmarkBaseline');
 
 const search = publicSearch;
 
@@ -54,7 +58,14 @@ for (const workload of workloads) {
     );
 
     await (mode === 'compare'
-      ? bench.compare(bench.from('baseline (4 searches)', baseline), current, config)
+      ? bench.compare(
+          bench.from(
+            'baseline (4 searches)',
+            baselineDirectory === null ? baseline : baselineFrom(baselineDirectory, selection, workload.id),
+          ),
+          current,
+          config,
+        )
       : current.run(config));
   });
 }

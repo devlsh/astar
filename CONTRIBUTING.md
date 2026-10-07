@@ -87,7 +87,7 @@ Domain files in `bench/fixtures/` declare grid factories and search options. The
 Run the quick cases with an adjacent target:
 
 ```sh
-pnpm bench:quick --reporter=default -t 'Adjacent target'
+pnpm bench:quick -t 'Adjacent target'
 ```
 
 Run `pnpm test` for the existing library correctness tests. These tests use the source public export and need no build.
@@ -107,10 +107,26 @@ Capture a local reference only when you intend to create or replace it. Then dis
 
 ```sh
 pnpm bench:quick --mode capture
-pnpm bench:quick --mode compare --reporter=default
+pnpm bench:quick --mode compare
 ```
 
 Use `bench:full` instead of `bench:quick` for a full reference.
+
+To compare against a separate checkout, first build and capture the reference in that checkout:
+
+```sh
+pnpm build
+pnpm bench:quick --mode capture
+pnpm bench:full --mode capture
+```
+
+Then enter your candidate worktree. Build its current source and compare against the reference checkout:
+
+```sh
+pnpm build
+BENCH_BASELINE=/path/to/baseline/repo pnpm bench:quick --mode compare
+BENCH_BASELINE=/path/to/baseline/repo pnpm bench:full --mode compare
+```
 
 When full sampling settings change, capture a fresh local full reference before comparison, even when workload IDs stay unchanged.
 
@@ -119,7 +135,7 @@ Native reference files do not record sampling settings, so comparison cannot det
 Check warmup sensitivity with the same unchanged build:
 
 ```sh
-pnpm bench:quick --mode double-warmup --reporter=default
+pnpm bench:quick --mode double-warmup
 ```
 
 This mode doubles warmup time without changing measurement floors or reference files.
