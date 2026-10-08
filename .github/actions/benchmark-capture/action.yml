@@ -11,6 +11,18 @@ inputs:
   head-sha:
     description: "Head commit SHA"
     required: true
+  capture-command:
+    description: "Benchmark Capture command"
+    required: true
+  compare-command:
+    description: "Benchmark Comparison command"
+    required: true
+  base-results-path:
+    description: "Relative base results directory"
+    required: true
+  head-results-path:
+    description: "Relative head results directory"
+    required: true
 
 outputs:
   artifact-id:
@@ -28,15 +40,12 @@ runs:
         path: benchmark-base
         persist-credentials: false
 
-    - name: "📥 install base dependencies"
+    - name: "⚙️ set up base"
       shell: bash
       working-directory: benchmark-base
-      run: pnpm install --frozen-lockfile
-
-    - name: "📦 build base"
-      shell: bash
-      working-directory: benchmark-base
-      run: pnpm build
+      run: |
+        pnpm install --frozen-lockfile
+        pnpm build
 
     - name: "📂 stage base output"
       shell: bash
@@ -46,25 +55,31 @@ runs:
 
     - name: "📊 capture base benchmark"
       shell: bash
-      run: pnpm bench:full --mode capture --reporter=default
+      env:
+        COMMAND: ${{ inputs.capture-command }}
+      run: bash -eo pipefail -c "$COMMAND"
 
-    - name: "📦 build head"
+    - name: "⚙️ set up head"
       shell: bash
       run: pnpm build
 
     - name: "📊 compare benchmark"
       shell: bash
-      run: pnpm bench:full --mode compare --reporter=default --reporter=github-actions
+      env:
+        COMMAND: ${{ inputs.compare-command }}
+      run: bash -eo pipefail -c "$COMMAND"
 
     - name: "📂 collect results"
       shell: bash
       env:
         BASE_SHA: ${{ inputs.base-sha }}
         HEAD_SHA: ${{ inputs.head-sha }}
+        BASE_RESULTS_PATH: ${{ inputs.base-results-path }}
+        HEAD_RESULTS_PATH: ${{ inputs.head-results-path }}
       run: |
-        mkdir -p benchmark-results/full/current
-        cp .vitest/benchmarks/full/*.json benchmark-results/full/
-        cp .vitest/benchmarks/full/current/*.json benchmark-results/full/current/
+        mkdir -p benchmark-results/base benchmark-results/head
+        cp "$BASE_RESULTS_PATH"/*.json benchmark-results/base/
+        cp "$HEAD_RESULTS_PATH"/*.json benchmark-results/head/
         node -e 'require("node:fs").writeFileSync("benchmark-results/measurement.json", JSON.stringify({base: process.env.BASE_SHA, head: process.env.HEAD_SHA}))'
 
     - name: "📤 upload results"

@@ -5,6 +5,8 @@ import { readFile, readdir } from 'node:fs/promises';
 import path from 'node:path';
 
 export async function publish({ github, context, core }) {
+  const operationsPerSample = Number(process.env.OPERATIONS_PER_SAMPLE ?? '1');
+  const unit = process.env.RESULT_UNIT ?? 'ms/operation';
   const source = {
     pr: context.payload.pull_request.number,
     run: context.runId,
@@ -23,6 +25,12 @@ export async function publish({ github, context, core }) {
   let rows;
 
   try {
+    if (!Number.isFinite(operationsPerSample) || operationsPerSample <= 0) {
+      skip('operations per sample must be finite and positive');
+
+      return;
+    }
+
     const measurement = await readJson(path.join(process.env.RESULTS, 'measurement.json'));
 
     if (measurement?.base !== source.base || measurement?.head !== source.head) {
@@ -31,11 +39,11 @@ export async function publish({ github, context, core }) {
       return;
     }
 
-    const baseDirectory = path.join(process.env.RESULTS, 'full');
-    const headDirectory = path.join(baseDirectory, 'current');
+    const baseDirectory = path.join(process.env.RESULTS, 'base');
+    const headDirectory = path.join(process.env.RESULTS, 'head');
     const baseEntries = await readdir(baseDirectory);
     const headEntries = await readdir(headDirectory);
-    const baseFiles = baseEntries.filter((file) => file !== 'current').toSorted((a, b) => a.localeCompare(b));
+    const baseFiles = baseEntries.toSorted((a, b) => a.localeCompare(b));
     const headFiles = headEntries.toSorted((a, b) => a.localeCompare(b));
 
     if (
@@ -53,12 +61,12 @@ export async function publish({ github, context, core }) {
     for (const file of baseFiles) {
       const baseResult = await readJson(path.join(baseDirectory, file));
       const headResult = await readJson(path.join(headDirectory, file));
-      const base = Number.isFinite(baseResult?.latency?.mean) ? baseResult.latency.mean / 4 : Number.NaN;
-      const head = Number.isFinite(headResult?.latency?.mean) ? headResult.latency.mean / 4 : Number.NaN;
+      const base = Number.isFinite(baseResult?.latency?.mean) ? baseResult.latency.mean / operationsPerSample : Number.NaN;
+      const head = Number.isFinite(headResult?.latency?.mean) ? headResult.latency.mean / operationsPerSample : Number.NaN;
       const change = (head / base - 1) * 100;
 
       if (!Number.isFinite(base) || base <= 0 || !Number.isFinite(head) || head <= 0 || !Number.isFinite(change)) {
-        skip('latency means and per-search values must be finite and positive');
+        skip('latency means and normalized values must be finite and positive');
 
         return;
       }
@@ -122,7 +130,7 @@ export async function publish({ github, context, core }) {
     `<!-- benchmark-run:${source.head}:${source.run}:${source.number}:${source.attempt} -->`,
     '## Benchmark Comparison',
     '',
-    '| Workload | Base, ms/search | PR, ms/search | Change |',
+    `| Workload | Base, ${unit} | PR, ${unit} | Change |`,
     '| --- | ---: | ---: | ---: |',
     ...rows,
     '',

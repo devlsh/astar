@@ -11,6 +11,12 @@ inputs:
   head-sha:
     description: "Head commit SHA"
     required: true
+  unit:
+    description: "Mean latency unit label"
+    default: "ms/operation"
+  operations-per-sample:
+    description: "Operations p/sample"
+    default: "1"
 
 runs:
   using: composite
@@ -27,6 +33,8 @@ runs:
         BASE_SHA: ${{ inputs.base-sha }}
         HEAD_SHA: ${{ inputs.head-sha }}
         RESULTS: ${{ runner.temp }}/benchmark-results
+        RESULT_UNIT: ${{ inputs.unit }}
+        OPERATIONS_PER_SAMPLE: ${{ inputs.operations-per-sample }}
       with:
         script: |
           const { publish } = await import(`${process.env.GITHUB_WORKSPACE}/.github/scripts/benchmark-report.mjs`);

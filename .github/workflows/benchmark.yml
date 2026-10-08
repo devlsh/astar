@@ -38,6 +38,10 @@ jobs:
           base-repository: ${{ github.event.pull_request.base.repo.full_name }}
           base-sha: ${{ github.event.pull_request.base.sha }}
           head-sha: ${{ github.event.pull_request.head.sha }}
+          capture-command: pnpm bench:full --mode capture --reporter=default
+          compare-command: pnpm bench:full --mode compare --reporter=default --reporter=github-actions
+          base-results-path: .vitest/benchmarks/full
+          head-results-path: .vitest/benchmarks/full/current
 
   report:
     name: "📝 report benchmarks"
@@ -68,3 +72,5 @@ jobs:
           artifact-id: ${{ needs.benchmark.outputs.artifact-id }}
           base-sha: ${{ needs.benchmark.outputs.base }}
           head-sha: ${{ needs.benchmark.outputs.head }}
+          unit: ms/search
+          operations-per-sample: "4"
