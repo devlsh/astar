@@ -22,6 +22,12 @@ export interface Score {
 
 export type OpenTile = [Vector, Score, OpenTile | null];
 
+export interface CellState {
+  tile?: TileBuilderCache;
+  open?: OpenTile;
+  closed?: boolean;
+}
+
 export interface ScoreOptions {
   current: Vector;
   parent: OpenTile;

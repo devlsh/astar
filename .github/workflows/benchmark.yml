@@ -15,6 +15,10 @@ jobs:
     name: "📊 compare benchmarks"
     runs-on: ubuntu-24.04
     timeout-minutes: 15
+    outputs:
+      artifact-id: ${{ steps.results.outputs.artifact-id }}
+      base: ${{ github.event.pull_request.base.sha }}
+      head: ${{ github.event.pull_request.head.sha }}
 
     steps:
       - name: "📥 check out head"
@@ -27,32 +31,46 @@ jobs:
       - name: "⚙️ set up node and pnpm"
         uses: devlsh/tools/github/setup@5a43d10d4535a7cf1368acd9313e70d417ac6235
 
-      - name: "📥 check out base"
+      - name: "📊 compare benchmarks"
+        id: results
+        uses: ./.github/actions/benchmark-capture
+        with:
+          base-repository: ${{ github.event.pull_request.base.repo.full_name }}
+          base-sha: ${{ github.event.pull_request.base.sha }}
+          head-sha: ${{ github.event.pull_request.head.sha }}
+          capture-command: pnpm bench:full --mode capture --reporter=default
+          compare-command: pnpm bench:full --mode compare --reporter=default --reporter=github-actions
+          base-results-path: .vitest/benchmarks/full
+          head-results-path: .vitest/benchmarks/full/current
+
+  report:
+    name: "📝 report benchmarks"
+    needs: benchmark
+    if: >-
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      needs.benchmark.outputs.artifact-id != '' &&
+      needs.benchmark.outputs.base != '' &&
+      needs.benchmark.outputs.head != ''
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - name: "📥 check out publisher"
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          repository: ${{ github.event.pull_request.base.repo.full_name }}
-          ref: ${{ github.event.pull_request.base.sha }}
-          path: benchmark-base
+          ref: ${{ github.event.pull_request.head.sha }}
           persist-credentials: false
+          sparse-checkout: |
+            .github/actions/benchmark-report
+            .github/scripts/benchmark-report.mjs
+          sparse-checkout-cone-mode: false
 
-      - name: "📥 install base dependencies"
-        working-directory: benchmark-base
-        run: pnpm install --frozen-lockfile
-
-      - name: "📦 build base"
-        working-directory: benchmark-base
-        run: pnpm build
-
-      - name: "📂 stage base output"
-        run: |
-          mkdir -p dist
-          cp -R benchmark-base/dist/. dist/
-
-      - name: "📊 capture base benchmark"
-        run: pnpm bench:full --mode capture --reporter=default
-
-      - name: "📦 build head"
-        run: pnpm build
-
-      - name: "📊 compare benchmark"
-        run: pnpm bench:full --mode compare --reporter=default --reporter=github-actions
+      - name: "📝 report benchmarks"
+        uses: ./.github/actions/benchmark-report
+        with:
+          artifact-id: ${{ needs.benchmark.outputs.artifact-id }}
+          base-sha: ${{ needs.benchmark.outputs.base }}
+          head-sha: ${{ needs.benchmark.outputs.head }}
+          unit: ms/search
+          operations-per-sample: "4"

@@ -1,4 +1,4 @@
-import { search, type Grid } from '../src';
+import { search, type Grid, type Vector } from '../src';
 import { makeGrid } from './grid';
 
 describe('search', () => {
@@ -69,6 +69,367 @@ describe('search', () => {
       [3, 0],
       [4, 0],
     ]);
+  });
+
+  describe('search compatibility', () => {
+    test.concurrent('retains frontier order on equal scores', () => {
+      expect(
+        search({
+          grid: [
+            [0, 0, 0, 0],
+            [0, -1, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+          ],
+          from: [0, 0],
+          to: [3, 3],
+        }),
+      ).toStrictEqual([
+        [0, 0],
+        [1, 0],
+        [2, 0],
+        [2, 1],
+        [2, 2],
+        [3, 2],
+        [3, 3],
+      ]);
+    });
+
+    test.concurrent('retains the preceding frontier order after score decreases', () => {
+      let seed = 248;
+
+      const grid = Array.from({ length: 12 }, () =>
+        Array.from({ length: 12 }, () => {
+          seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
+
+          return seed / 0x1_0000_0000 < 0.3 ? -1 : 0;
+        }),
+      );
+
+      grid[0][0] = 0;
+      grid[11][11] = 0;
+
+      expect(
+        search({
+          grid,
+          from: [0, 0],
+          to: [11, 11],
+          diagonal: true,
+          cutCorners: false,
+          heuristic: 'manhattan',
+        }),
+      ).toStrictEqual([
+        [0, 0],
+        [1, 1],
+        [2, 2],
+        [3, 3],
+        [4, 4],
+        [4, 5],
+        [5, 6],
+        [6, 5],
+        [7, 4],
+        [8, 4],
+        [9, 4],
+        [10, 4],
+        [11, 4],
+        [11, 5],
+        [11, 6],
+        [11, 7],
+        [11, 8],
+        [11, 9],
+        [11, 10],
+        [11, 11],
+      ]);
+    });
+
+    test.concurrent('takes fresh snapshots in each search on mixed mutable grids', () => {
+      const grid: Grid = [
+        [0, { elevation: 0 }, 0],
+        [0, 0, 0],
+      ];
+
+      expect(
+        search({
+          grid,
+          from: [0, 0],
+          to: [2, 0],
+        }),
+      ).toStrictEqual([
+        [0, 0],
+        [1, 0],
+        [2, 0],
+      ]);
+
+      grid[0][1] = {
+        elevation: 0,
+        isLegal: false,
+      };
+
+      expect(
+        search({
+          grid,
+          from: [0, 0],
+          to: [2, 0],
+        }),
+      ).toStrictEqual([
+        [0, 0],
+        [0, 1],
+        [1, 1],
+        [2, 1],
+        [2, 0],
+      ]);
+
+      grid[1][1] = -1;
+
+      expect(
+        search({
+          grid,
+          from: [0, 0],
+          to: [2, 0],
+        }),
+      ).toBeNull();
+    });
+
+    test.concurrent('keeps lazy tile reads and reports reachable ragged cells', () => {
+      expect(() =>
+        search({
+          grid: [[0, 0], []],
+          from: [0, 0],
+          to: [1, 0],
+        }),
+      ).toThrow('Grid value is undefined');
+
+      expect(
+        search({
+          grid: [
+            [0, 0, -1],
+            [0, 0],
+          ],
+          from: [0, 0],
+          to: [1, 0],
+        }),
+      ).toStrictEqual([
+        [0, 0],
+        [1, 0],
+      ]);
+    });
+
+    test.concurrent('captures endpoint identity before grid access without extra coordinate reads', () => {
+      const from: Vector = [0, 0];
+      const to: Vector = [2, 0];
+
+      const reads: string[] = [];
+      let initialReads: string[] | undefined;
+      let targetX = 2;
+
+      Object.defineProperties(from, {
+        0: {
+          get: () => {
+            reads.push('from.x');
+
+            return 0;
+          },
+        },
+        1: {
+          get: () => {
+            reads.push('from.y');
+
+            return 0;
+          },
+        },
+      });
+
+      Object.defineProperties(to, {
+        0: {
+          get: () => {
+            reads.push('to.x');
+
+            return targetX;
+          },
+        },
+        1: {
+          get: () => {
+            reads.push('to.y');
+
+            return 0;
+          },
+        },
+      });
+
+      const path = search({
+        get from() {
+          reads.push('from');
+
+          return from;
+        },
+        get to() {
+          reads.push('to');
+
+          return to;
+        },
+        get grid() {
+          initialReads ??= [...reads];
+          targetX = 1;
+
+          return [[0, 0, 0]];
+        },
+      });
+
+      expect(initialReads).toStrictEqual(['from', 'from.x', 'from.y', 'to', 'to.x', 'to.y']);
+      expect(path).toStrictEqual([
+        [0, 0],
+        [1, 0],
+        [2, 0],
+      ]);
+    });
+
+    test.concurrent('keeps callback vectors independent and supports reentrant searches', () => {
+      const retained: Vector[] = [];
+      let nested = false;
+
+      const path = search({
+        grid: [
+          [0, 0, 0],
+          [0, 0, 0],
+        ],
+        from: [0, 0],
+        to: [2, 0],
+        heuristic: (current) => {
+          retained.push(current);
+
+          if (!nested) {
+            nested = true;
+            expect(
+              search({
+                grid: [[0, 0]],
+                from: [0, 0],
+                to: [1, 0],
+              }),
+            ).toStrictEqual([
+              [0, 0],
+              [1, 0],
+            ]);
+          }
+
+          return 0;
+        },
+      });
+
+      expect(path).toStrictEqual([
+        [0, 0],
+        [1, 0],
+        [2, 0],
+      ]);
+      expect(new Set(retained).size).toBe(retained.length);
+      expect(retained[0]).toStrictEqual([1, 0]);
+      expect(retained[1]).toStrictEqual([0, 1]);
+    });
+
+    test.concurrent('prepares neighbors before callbacks can change the origin', () => {
+      const from: Vector = [0, 0];
+      const seen: Vector[] = [];
+
+      const path = search({
+        grid: [
+          [0, 0, 0],
+          [0, 0, 0],
+        ],
+        from,
+        to: [2, 0],
+        heuristic: (current) => {
+          seen.push([...current]);
+          from[0] = 1;
+
+          return 0;
+        },
+      });
+
+      expect(path).toStrictEqual([
+        [1, 0],
+        [1, 0],
+        [2, 0],
+      ]);
+      expect(seen.slice(0, 2)).toStrictEqual([
+        [1, 0],
+        [0, 1],
+      ]);
+    });
+
+    test.concurrent('preserves custom mutation, exceptions, and nonfinite ordering', () => {
+      expect(
+        search({
+          grid: [[0, 0, 0]],
+          from: [0, 0],
+          to: [2, 0],
+          heuristic: (current) => {
+            current[0] = 2;
+
+            return 0;
+          },
+        }),
+      ).toStrictEqual([
+        [0, 0],
+        [2, 0],
+      ]);
+
+      const failure = new Error('heuristic failure');
+
+      expect(() =>
+        search({
+          grid: [[0, 0]],
+          from: [0, 0],
+          to: [1, 0],
+          heuristic: () => {
+            throw failure;
+          },
+        }),
+      ).toThrow(failure);
+
+      for (const value of [Number.NaN, Infinity, -Infinity]) {
+        expect(
+          search({
+            grid: [[0, 0]],
+            from: [0, 0],
+            to: [1, 0],
+            heuristic: () => value,
+          }),
+        ).toStrictEqual([
+          [0, 0],
+          [1, 0],
+        ]);
+      }
+    });
+
+    test.concurrent('snapshots object tiles once at first access', () => {
+      let elevation = 0;
+      let reads = 0;
+
+      const middle = {
+        get elevation() {
+          reads++;
+
+          return elevation;
+        },
+      };
+
+      const path = search({
+        grid: [[0, middle, 0]],
+        from: [0, 0],
+        to: [2, 0],
+        heuristic: () => {
+          elevation = 10;
+
+          return 0;
+        },
+      });
+
+      expect(path).toStrictEqual([
+        [0, 0],
+        [1, 0],
+        [2, 0],
+      ]);
+      expect(reads).toBe(2);
+    });
   });
 
   describe('movement', () => {

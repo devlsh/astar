@@ -1,4 +1,4 @@
-import { asc } from '../src';
+import { asc } from '../src/scoring';
 
 describe('asc', () => {
   test.concurrent('should rearrange in ascending order', () => {

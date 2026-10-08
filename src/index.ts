@@ -1,12 +1,7 @@
-import { type BuiltinHeuristic, type Heuristic, heuristics } from './heuristics';
-import {
-  type Neighbor,
-  type OpenTile,
-  type ScoreOptions,
-  type SearchOptions,
-  type TileBuilderCache,
-  type Vector,
-} from './types';
+import { directions, neighbors, vectorId } from './grid';
+import { calculatePath } from './path';
+import { asc, score } from './scoring';
+import { type CellState, type OpenTile, type SearchOptions, type TileBuilderCache, type Vector } from './types';
 
 export function search(options: SearchOptions) {
   const heuristic = options.heuristic ?? 'diagonal';
@@ -15,31 +10,67 @@ export function search(options: SearchOptions) {
   const diagonal = options.diagonal ?? false;
 
   // Store the found path and open/closed lists.
-  const closed: string[] = [vectorId(options.from)];
-  const end = vectorId(options.to);
+  const { from } = options;
+  const start: Vector = [from[0], from[1]];
+  const { to } = options;
+  const destination: Vector = [to[0], to[1]];
   let path: Vector[] | null = null;
   let open: OpenTile[] = [];
+  let head = 0;
+
+  // Custom heuristics can mutate retained vectors, so their membership must remain a live scan.
+  // oxlint-disable-next-line anti-slop/no-runtime-typeof -- SearchOptions permits builtin names and mutable custom callbacks.
+  const indexed = typeof heuristic !== 'function';
+  let finite = true;
 
   // Calculate grid limits.
   if (!Array.isArray(options.grid)) {
-    throw new Error('non-array grid provided');
+    throw new Error('Non-array Grid provided');
   }
 
   if (options.grid.length === 0 || !Array.isArray(options.grid[0])) {
-    throw new Error('2 dimensional grid array required');
+    throw new Error('2 dimensional Grid array required');
   }
 
+  const cells = new Map<number | string, CellState>();
   const maxX = options.grid[0].length;
   const maxY = options.grid.length;
+  const numeric = Number.isSafeInteger(maxX * maxY);
+
+  /**
+   * In-grid integer coordinates have collision-free numeric keys. Other coordinates retain string identity.
+   * Records are local to this search and exist only for cells that it visits or reads.
+   */
+  function cellId(vector: Vector) {
+    const x = vector[0];
+    const y = vector[1];
+
+    return numeric && Number.isInteger(x) && Number.isInteger(y) && x >= 0 && y >= 0 && x < maxX && y < maxY
+      ? y * maxX + x
+      : vectorId(x, y);
+  }
+
+  function state(id: number | string) {
+    let value = cells.get(id);
+
+    if (!value) {
+      value = {};
+      cells.set(id, value);
+    }
+
+    return value;
+  }
+
+  state(cellId(start)).closed = true;
+
+  const end = cellId(destination);
 
   // Helper function to determine the make-up of a Tile object, cached in-memory.
-  const tileCache: Record<string, TileBuilderCache> = {};
-
   function tile(vector: Vector): TileBuilderCache {
-    const id = vectorId(vector);
+    const cell = state(cellId(vector));
 
-    if (tileCache[id]) {
-      return tileCache[id];
+    if (cell.tile) {
+      return cell.tile;
     }
 
     const rawValue = options.grid[vector[1]]?.[vector[0]];
@@ -63,24 +94,18 @@ export function search(options: SearchOptions) {
       };
     }
 
-    tileCache[id] = value;
+    cell.tile = value;
 
     return value;
   }
 
   // Helper function to determine legality of a Vector.
-  function canUse([cell, neighbors]: Neighbor, origin: Vector) {
+  function canUse(cell: Vector, origin: Vector) {
     return (
       // Make sure this tile is walkable.
       !isIllegal(cell, origin) &&
       // Don't use closed cells.
-      !closed.includes(vectorId(cell)) &&
-      // Check the neighboring cells, if diagonal movement.
-      // There are no neighbors to check.
-      (neighbors === null ||
-        // If we can cut corners, otherwise if the corners are legal.
-        cutCorners ||
-        (!isIllegal(neighbors[0], origin, 0) && !isIllegal(neighbors[1], origin, 0)))
+      !cells.get(cellId(cell))?.closed
     );
   }
 
@@ -109,25 +134,41 @@ export function search(options: SearchOptions) {
     );
   }
 
-  // Calculates the neighbors and their scores.
+  /**
+   * Expands neighbors in grid direction order, then restores stable score order.
+   * Score decreases retain the preceding frontier order for ties, rather than discovery order.
+   */
   function traverse(from: OpenTile) {
-    const { tiles, total } = neighbors(from[0], diagonal);
+    // The root can have accessor coordinates. Custom callbacks can retain and mutate any vector.
+    const prepared = !indexed || from[2] === null ? neighbors(from[0], diagonal).tiles : null;
+    const x = prepared ? 0 : from[0][0];
+    const y = prepared ? 0 : from[0][1];
+    const total = diagonal ? 8 : 4;
+    const added: OpenTile[] = [];
+    let decreased = false;
 
     for (let i = 0; i < total; i++) {
-      const neighbor = tiles[i];
-
-      if (!neighbor) {
-        continue;
-      }
-
-      const name = vectorId(neighbor[0]);
+      const [dx, dy] = directions[i];
+      const cell: Vector = prepared ? prepared[i][0] : [x + dx, y + dy];
+      const name = cellId(cell);
 
       // If the tile is usable, push it to the list.
-      if (canUse(neighbor, from[0])) {
-        const existing = open.find((item) => vectorId(item[0]) === name);
+      if (canUse(cell, from[0])) {
+        if (i >= 4 && !cutCorners) {
+          const corners = prepared ? prepared[i][1] : null;
+
+          if (
+            isIllegal(corners ? corners[0] : [x, y + dy], from[0], 0) ||
+            isIllegal(corners ? corners[1] : [x + dx, y], from[0], 0)
+          ) {
+            continue;
+          }
+        }
+
+        const existing = indexed ? cells.get(name)?.open : open.find((item) => cellId(item[0]) === name);
 
         const currentScore = score({
-          current: neighbor[0],
+          current: cell,
           parent: from,
           goal: options.to,
           heuristic,
@@ -135,24 +176,64 @@ export function search(options: SearchOptions) {
 
         // If it is already in the open list, but this path results in a better score.
         if (existing && currentScore.f < existing[1].f) {
-          const existingName = vectorId(existing[0]);
+          if (indexed) {
+            existing[1] = currentScore;
+            existing[2] = from;
+            decreased = true;
+          } else {
+            const existingName = cellId(existing[0]);
 
-          open = open.map((existingTile) => {
-            if (vectorId(existingTile[0]) === existingName) {
-              existingTile[1] = currentScore;
-              existingTile[2] = from;
-            }
+            open = open.map((existingTile) => {
+              if (cellId(existingTile[0]) === existingName) {
+                existingTile[1] = currentScore;
+                existingTile[2] = from;
+              }
 
-            return existingTile;
-          });
+              return existingTile;
+            });
+          }
         } else if (!existing) {
-          open.push([neighbor[0], currentScore, from]);
+          const entry: OpenTile = [cell, currentScore, from];
+
+          if (indexed) {
+            state(name).open = entry;
+            added.push(entry);
+          } else {
+            open.push(entry);
+          }
         }
+
+        finite &&= Number.isFinite(currentScore.f);
       }
     }
 
-    // Sort the new open list by F values.
-    open = open.toSorted((a, b) => asc(a[1].f, b[1].f));
+    if (!indexed || decreased || !finite) {
+      // Stable sorting uses the preceding frontier order, not discovery order, after a decrease.
+      open = [...open.slice(head), ...added].toSorted((a, b) => asc(a[1].f, b[1].f));
+      head = 0;
+    } else {
+      for (const entry of added) {
+        let high = open.length;
+        let low = head;
+
+        while (low < high) {
+          const middle = Math.floor((low + high) / 2);
+
+          if (entry[1].f < open[middle][1].f) {
+            high = middle;
+          } else {
+            low = middle + 1;
+          }
+        }
+
+        open.splice(low, 0, entry);
+      }
+
+      if (head > 0 && head >= open.length / 2) {
+        open = open.slice(head);
+        head = 0;
+      }
+    }
   }
 
   // And start traversing from the starting position.
@@ -167,20 +248,24 @@ export function search(options: SearchOptions) {
   ]);
 
   // Traverse the open list until it is empty.
-  while (open.length > 0) {
-    const bestScore = open.shift();
+  while (open.length > head) {
+    const bestScore = indexed ? open[head++] : open.shift();
 
     if (bestScore) {
       const [vector] = bestScore;
-      const name = vectorId(vector);
+      const name = cellId(vector);
 
       // Add this to the closed list.
-      closed.push(name);
+      const cell = state(name);
+      cell.closed = true;
+      cell.open = undefined;
 
       // Check if we're at the end.
       if (name === end) {
         path = calculatePath(bestScore);
         open = [];
+        head = 0;
+
         continue;
       }
 
@@ -192,99 +277,4 @@ export function search(options: SearchOptions) {
   return path;
 }
 
-export function calculatePath(result: OpenTile) {
-  let current: OpenTile | null = result;
-  const path: Vector[] = [];
-
-  while (current !== null) {
-    path.push(current[0]);
-    current = current[2];
-  }
-
-  path.reverse();
-
-  return path;
-}
-
-export function neighbors(vector: Vector, diagonals = false) {
-  const tiles: Neighbor[] = [];
-
-  tiles.push(
-    [[vector[0] - 1, vector[1]], null],
-    [[vector[0] + 1, vector[1]], null],
-    [[vector[0], vector[1] - 1], null],
-    [[vector[0], vector[1] + 1], null],
-  );
-
-  if (diagonals) {
-    tiles.push(
-      [
-        [vector[0] - 1, vector[1] - 1],
-        [
-          [vector[0], vector[1] - 1],
-          [vector[0] - 1, vector[1]],
-        ],
-      ],
-      [
-        [vector[0] + 1, vector[1] + 1],
-        [
-          [vector[0], vector[1] + 1],
-          [vector[0] + 1, vector[1]],
-        ],
-      ],
-      [
-        [vector[0] + 1, vector[1] - 1],
-        [
-          [vector[0], vector[1] - 1],
-          [vector[0] + 1, vector[1]],
-        ],
-      ],
-      [
-        [vector[0] - 1, vector[1] + 1],
-        [
-          [vector[0], vector[1] + 1],
-          [vector[0] - 1, vector[1]],
-        ],
-      ],
-    );
-  }
-
-  return {
-    tiles,
-    total: tiles.length,
-  };
-}
-
-function resolveHeuristic(input: BuiltinHeuristic | Heuristic): Heuristic {
-  // oxlint-disable-next-line anti-slop/no-runtime-typeof -- The declared union supports builtin names and custom heuristic functions.
-  return typeof input === 'function' ? input : heuristics[input];
-}
-
-export function score(options: ScoreOptions) {
-  const g = options.parent[1].g + 1;
-  const h = resolveHeuristic(options.heuristic)(options.current, options.goal);
-
-  return {
-    g,
-    h,
-    f: g + h,
-  };
-}
-
-export function vectorId(vector: Vector) {
-  return `${vector[0]},${vector[1]}`;
-}
-
-export function asc(a: number, b: number) {
-  if (a > b) {
-    return 1;
-  }
-
-  if (a < b) {
-    return -1;
-  }
-
-  return 0;
-}
-
-export type * from './types';
+export type { Grid, SearchOptions, Tile, TileBuilder, Vector } from './types';

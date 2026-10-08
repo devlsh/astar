@@ -1,0 +1,92 @@
+name: "📊 capture benchmark"
+description: "Capture benchmarks for the base and head."
+
+inputs:
+  base-repository:
+    description: "Repository"
+    required: true
+  base-sha:
+    description: "Base commit SHA"
+    required: true
+  head-sha:
+    description: "Head commit SHA"
+    required: true
+  capture-command:
+    description: "Benchmark Capture command"
+    required: true
+  compare-command:
+    description: "Benchmark Comparison command"
+    required: true
+  base-results-path:
+    description: "Relative base results directory"
+    required: true
+  head-results-path:
+    description: "Relative head results directory"
+    required: true
+
+outputs:
+  artifact-id:
+    description: "Results Artifact ID"
+    value: ${{ steps.results.outputs.artifact-id }}
+
+runs:
+  using: composite
+  steps:
+    - name: "📥 check out base"
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        repository: ${{ inputs.base-repository }}
+        ref: ${{ inputs.base-sha }}
+        path: benchmark-base
+        persist-credentials: false
+
+    - name: "⚙️ set up base"
+      shell: bash
+      working-directory: benchmark-base
+      run: |
+        pnpm install --frozen-lockfile
+        pnpm build
+
+    - name: "📂 stage base output"
+      shell: bash
+      run: |
+        mkdir -p dist
+        cp -R benchmark-base/dist/. dist/
+
+    - name: "📊 capture base benchmark"
+      shell: bash
+      env:
+        COMMAND: ${{ inputs.capture-command }}
+      run: bash -eo pipefail -c "$COMMAND"
+
+    - name: "⚙️ set up head"
+      shell: bash
+      run: pnpm build
+
+    - name: "📊 compare benchmark"
+      shell: bash
+      env:
+        COMMAND: ${{ inputs.compare-command }}
+      run: bash -eo pipefail -c "$COMMAND"
+
+    - name: "📂 collect results"
+      shell: bash
+      env:
+        BASE_SHA: ${{ inputs.base-sha }}
+        HEAD_SHA: ${{ inputs.head-sha }}
+        BASE_RESULTS_PATH: ${{ inputs.base-results-path }}
+        HEAD_RESULTS_PATH: ${{ inputs.head-results-path }}
+      run: |
+        mkdir -p benchmark-results/base benchmark-results/head
+        cp "$BASE_RESULTS_PATH"/*.json benchmark-results/base/
+        cp "$HEAD_RESULTS_PATH"/*.json benchmark-results/head/
+        node -e 'require("node:fs").writeFileSync("benchmark-results/measurement.json", JSON.stringify({base: process.env.BASE_SHA, head: process.env.HEAD_SHA}))'
+
+    - name: "📤 upload results"
+      id: results
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+      with:
+        name: benchmark-results-${{ github.run_attempt }}
+        path: benchmark-results/
+        if-no-files-found: error
+        retention-days: 1
