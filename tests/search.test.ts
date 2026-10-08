@@ -49,6 +49,28 @@ describe('search', () => {
     ]);
   });
 
+  test.concurrent('should use a shorter route discovered after a detour', () => {
+    const path = search({
+      from: [0, 0],
+      to: [4, 0],
+      grid: [
+        [0, 0, 0, 0, 0],
+        [0, 0, 0, -1, -1],
+      ],
+      // Zero estimates favor the lower detour before the direct route reaches [2, 0].
+      // Both rows underestimate or equal the remaining distance to the goal.
+      heuristic: (current, goal) => (current[1] === 0 ? goal[0] - current[0] : 0),
+    });
+
+    expect(path).toStrictEqual([
+      [0, 0],
+      [1, 0],
+      [2, 0],
+      [3, 0],
+      [4, 0],
+    ]);
+  });
+
   describe('search compatibility', () => {
     test.concurrent('retains frontier order on equal scores', () => {
       expect(
