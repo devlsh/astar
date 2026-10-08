@@ -1,6 +1,6 @@
 # A* Demo
 
-For demo work, apply [shared development standards](../docs/development.md) and [agent workflow](../docs/development.md#agent-workflow).
+For demo work, read [Development](../docs/development.md) and [Agent Workflow](../docs/development.md#agent-workflow).
 
 ## Owners
 
@@ -22,13 +22,13 @@ Remove ticker and viewport listeners before GUI and scene disposal. Destroy the 
 
 ## Checks
 
-Use the shared environment and dependency recovery in [agent workflow](../docs/development.md#environment-and-dependencies). [Root scripts](../package.json) forward demo commands to [the demo manifest](package.json). From the repository root, the manifests define:
+Use [Local Development](../CONTRIBUTING.md#local-development) for environment setup. [Root scripts](../package.json) forward demo commands to [the demo manifest](package.json). From the repository root, the manifests define:
 
 - `pnpm demo dev` starts Vite for real-interface checks.
 - `pnpm demo typecheck` checks browser source and Vite configuration without emitting files.
 - `pnpm demo build` builds the demo with Vite.
 - `pnpm demo wrangler deploy --dry-run` validates native deployment packaging without deploying. Run it after `pnpm demo build` exactly as shown, without environment wrappers or additional environment variables. Build and dry-run are packaging checks, not runtime HTTP tests. Local checks do not verify custom-domain ownership, DNS, secrets, or environment protection.
 
-Select these checks cumulatively with [shared validation](../docs/development.md#validation-selection) within caller authorization. For behavior changes, inspect the running interface for pointer painting, legal endpoint moves, elevation and search options, no-route feedback, clear/reset actions, resizing, renderer initialization, and HMR cleanup as affected. Completion requires the affected controls and lifecycle to behave as described, with each executed check and any gap reported. If startup or checks fail, resolve the failure at its executable owner or report the blocker; static checks alone do not prove canvas behavior. Do not bypass authentication failures with live operations.
+Select these checks with [Agent Workflow](../docs/development.md#agent-workflow) within caller authorization. For behavior changes, inspect the running interface for pointer painting, legal endpoint moves, elevation and search options, no-route feedback, clear/reset actions, resizing, renderer initialization, and HMR cleanup as affected. Completion requires the affected controls and lifecycle to behave as described, with each executed check and any gap reported. If startup or checks fail, resolve the failure at its executable owner or report the blocker; static checks alone do not prove canvas behavior. Do not bypass authentication failures with live operations.
 
 Demo checks are separate from library typechecking, tests, and packaging. When changing the library API consumed here, verify both owning seams.
