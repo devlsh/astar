@@ -7,6 +7,7 @@ import path from 'node:path';
 export async function publish({ github, context, core }) {
   const operationsPerSample = Number(process.env.OPERATIONS_PER_SAMPLE ?? '1');
   const unit = process.env.RESULT_UNIT ?? 'ms/operation';
+
   const source = {
     pr: context.payload.pull_request.number,
     run: context.runId,
