@@ -1,62 +1,56 @@
 # Contributing
 
-Read the [Code of Conduct](CODE_OF_CONDUCT.md) before participating. This guide covers reporting problems, setting up your checkout, and submitting changes.
+Read the [Code of Conduct](CODE_OF_CONDUCT.md) before participating.
 
 ## Questions And Reports
 
 Use [GitHub Discussions](https://github.com/devlsh/astar/discussions) for questions and support, and [Issues](https://github.com/devlsh/astar/issues) for bugs and feature requests. Report vulnerabilities privately as described in [SECURITY.md](SECURITY.md).
 
-Search open and closed issues before opening a new one. If you find a duplicate, add useful details there. Otherwise, describe the expected and actual behavior, steps to reproduce it, and relevant environment details. Distinguish what you observed from what you think caused it.
+Search open and closed issues first. Add details to an existing report, or open a new one with reproduction steps, expected and actual behavior, and environment details.
 
 ## Local Development
 
-### Requirements
+Install [Nix](https://nix.dev/) and [devenv](https://devenv.sh/), then clone the repository.
 
-- [Nix](https://nix.dev/)
-- [devenv](https://devenv.sh/)
-- [direnv](https://direnv.net/) _(Optional)_
+From the repository root, install dependencies with the frozen lockfile and set up Git hooks:
 
-The Nix environment selects Node and pnpm major package families from locked inputs. It does not verify exact versions. [package.json](package.json) declares the exact required versions in `devEngines`; applicable pnpm commands reject mismatches.
+```sh
+devenv tasks run astar:install
+```
 
-### Workflow
+Enter the development shell before running the pnpm commands below:
 
-1. Enter the cloned repo. If you're using `direnv`, allow the `.envrc` for the repository:
+```sh
+devenv shell
+```
 
-   ```sh
-   direnv allow .
-   ```
-
-   To revoke approval, run `direnv deny .` and leave the directory to unload its environment. For manual activation, omit or disable your host shell's direnv hook and use the explicit devenv commands below. Those commands alone do not disable an existing hook.
-
-2. Confirm the current [dependency policy](#dependency-changes), then install dependencies with the frozen lockfile. This also installs Git hooks:
-
-   ```sh
-   devenv tasks run astar:install
-   ```
-
-3. Before changing source, read the relevant implementation, tests, public usage examples, and package exports. Run static checks before requesting review:
-
-   ```sh
-   devenv --no-tui shell -- pnpm check
-   ```
-
-With an activated environment, use `pnpm <script>`. Without direnv, use `devenv shell -- pnpm <script>` from the repository root.
+If you use [direnv](https://direnv.net/), run `direnv allow .` instead of entering the shell manually.
 
 ## Dependency Changes
 
-Before installing or updating dependencies, confirm the current release-age policy and eligible versions. The manifest and workspace configuration declare no release-age threshold. If the policy owner or version eligibility is unclear, ask the maintainer to identify the applicable policy and confirm eligibility before proceeding. Wait for an eligible version or choose another. Do not bypass the policy or add exclusions.
-
-The frozen install uses the existing lockfile; it does not select new dependency versions. When selecting or updating versions, include related manifest, lockfile, script, and configuration changes together.
+Ask the maintainer to approve dependency versions before adding or updating them. Include the manifest, lockfile, and any related script or configuration changes in the same PR.
 
 ## Checks
 
-You can find available scripts in [package.json](package.json). `pnpm check` runs root typechecking, linting, and formatting checks. It does not run tests, demo typechecking, or builds. Use `pnpm build` when you need generated package output.
+Run root typechecking, linting, and formatting checks:
 
-To fix lint and formatting findings, run `pnpm lint:fix`, then `pnpm fmt`. Inspect the diff and fix any remaining findings before rerunning checks.
+```sh
+pnpm check
+```
 
-Run `pnpm test` for the Vitest suite. For behavior changes, add or update tests at the public consumer seam and describe what you verified; static checks alone do not prove runtime behavior.
+`pnpm check` does not run tests, coverage, demo typechecking, or builds.
 
-Run `pnpm test:coverage` for the same suite with coverage reports. [vitest.config.ts](vitest.config.ts) limits coverage to `src/**/*.ts`, without test fixtures or generated output. Coverage shows code execution, not proof of correct behavior. `pnpm check` does not run coverage.
+Apply automatic lint and formatting fixes when needed:
+
+```sh
+pnpm fix:all
+```
+
+Inspect the diff, fix remaining findings, and rerun `pnpm check` until it passes. For documentation changes, check local links and anchors too.
+
+Run `pnpm test` for the Vitest suite, or `pnpm test:coverage` for coverage reports. For behavior changes, add or update tests at the public consumer seam and describe the results. Static checks alone do not prove runtime behavior.
+
+Use `pnpm build` when you need generated package output.
 
 For demo changes, run these additional checks from the repository root:
 
@@ -65,7 +59,7 @@ pnpm demo typecheck
 pnpm demo build
 ```
 
-For demo behavior changes, run `pnpm demo dev` and inspect the affected controls, terrain and endpoint edits, search options, resizing, and cleanup in the browser. See the [demo guide](demo/README.md) for its controls. Library checks do not replace demo checks.
+For demo behavior changes, run `pnpm demo dev` and inspect the affected behavior in the browser. The [demo guide](demo/README.md) describes its controls. Library checks do not replace demo checks.
 
 ## Benchmarks
 
@@ -146,15 +140,10 @@ Use `bench:full` for the full control. Repeat ordinary runs manually on a quiet 
 
 ## Pull Requests
 
-Search existing issues and PRs before proposing duplicate work. Keep your change focused and update affected callers, tests, [README examples](README.md#usage), and contributor instructions together.
+Search existing issues and PRs first. Keep changes focused, and update affected tests and usage examples.
 
-Use the [PR template](.github/PULL_REQUEST_TEMPLATE.md) and:
-
-- Target `main`. Use Conventional Commit titles/descriptions for release-relevant changes.
-- Explain the problem, rationale, scope, and alternatives. Link related issues or PRs.
-- Describe API, documentation, and release impact, including breaking changes. Point reviewers to areas needing attention.
-- List the checks you ran and their results, regression coverage, and reasons for omitted tests or blocked checks.
-- For larger changes, open a draft once one working part passes its checks and describe the remaining work. Request final review after local and required CI checks pass and blocking findings are resolved; summarize how you addressed advisory findings.
-- If you use AI, write concise descriptions in your own words and disclose how you reviewed the code and reached its decisions.
-
-Release dispatch and publication are separate maintainer operations, not part of submitting a PR.
+- Open a PR against `main` using the [PR template](.github/PULL_REQUEST_TEMPLATE.md). Use a Conventional Commit title for release-relevant changes.
+- Explain the change, link related issues, and call out breaking changes or areas that need review.
+- List checks run and their results. Explain omitted tests or blocked checks.
+- Use a draft for unfinished work. Request final review after local and required CI checks pass and blocking findings are resolved.
+- If you use AI, write the description in your own words and explain how you reviewed its code and decisions.

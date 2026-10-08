@@ -16,10 +16,9 @@ Use `pnpm` for repository work, not `npm` or `yarn`. Executable files own discov
 
 Read the smallest applicable owner before editing, reviewing, or deeply analyzing its subject:
 
-- **Contribute or validate** - Read [CONTRIBUTING.md](CONTRIBUTING.md) for shared human contribution and setup procedures, then [Agent Workflow](docs/development.md#agent-workflow) for agent authorization, tracker discipline, tooling, cumulative validation, and closeout. Skills naming `docs/agents/issue-tracker.md` or `docs/agents/triage-labels.md` route to [Tracker Operations](docs/development.md#tracker-operations); do not create duplicate compatibility files.
-- **Develop the package** - Read [docs/development.md](docs/development.md) for responsibilities, public contracts, source authoring, TypeScript, and comments.
-- **Change documentation or routing** - Read [Documentation Authority](docs/development.md#documentation-authority) before changing documentation, instructions, or their pointers.
-- **Develop or validate the demo** - Read [demo/AGENTS.md](demo/AGENTS.md) for canvas ownership, lifecycle, deployment packaging, and workflow boundaries. Shared standards remain in [docs/development.md](docs/development.md).
-- **Release or recover** - Read [docs/releasing.md](docs/releasing.md) for hosted readiness, authorization, prepare/publish, verification, and partial failures.
+- **Contribute or validate** - Read [CONTRIBUTING.md](CONTRIBUTING.md) for setup, checks, and pull requests. Read [Agent Workflow](docs/development.md#agent-workflow) for consumer checks and results. Skills with `docs/agents/issue-tracker.md` or `docs/agents/triage-labels.md` routes use [Tracker Operations](docs/development.md#tracker-operations). Do not create duplicate compatibility files.
+- **Develop the package or change documentation** - Read [docs/development.md](docs/development.md) for package development and consumer checks. For instructions or routing changes, read its [Documentation](docs/development.md#documentation) section.
+- **Develop or validate the demo** - Read [demo/AGENTS.md](demo/AGENTS.md) for canvas ownership, lifecycle, deployment packaging, and behavior checks. Use [Agent Workflow](docs/development.md#agent-workflow) for shared checks and results.
+- **Release or recover** - Read [docs/releasing.md](docs/releasing.md) for authorization, readiness, completion, and recovery.
 
 Update this file only for always-loaded authority, hard constraints, or task routing. Put branch-specific policy in its named owner and update affected links together.
