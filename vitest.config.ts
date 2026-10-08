@@ -6,5 +6,8 @@ export default defineConfig({
     clearMocks: true,
     mockReset: true,
     restoreMocks: true,
+    coverage: {
+      include: ['src/**/*.ts'],
+    },
   },
 });
