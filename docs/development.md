@@ -102,9 +102,17 @@ Inspect manifest scripts/composition; keep related scripts/config/lock changes t
 
 [validate.yml](../.github/workflows/validate.yml) owns ordinary CI validation. CI runs without Nix/devenv. Local setup remains unchanged.
 
-The PR-only [benchmark.yml](../.github/workflows/benchmark.yml) owns paired benchmark execution, separate from validation. Its benchmark job captures the event base and compares the event head on one runner with the head harness. Each revision uses its own frozen lockfile under the head-selected toolchain.
+The PR-only [benchmark.yml](../.github/workflows/benchmark.yml) owns job permissions, head checkout, toolchain setup, job dependencies, producer outputs, and local action routing, separate from validation. The [capture composite action](../.github/actions/benchmark-capture/action.yml) owns base checkout, paired native execution, result collection, and upload. It captures the event base and compares the event head on one runner with the head harness. Each revision uses its own frozen lockfile under the head-selected toolchain.
 
-Native reference and candidate files stay in the job workspace, with no uploads or measurement history. The **📊 compare benchmarks** job output shows the native comparison table. Capture uses the native default reporter. Comparison explicitly selects the native default and GitHub Actions reporters. The GitHub Actions reporter supplies failure annotations and a test summary, not benchmark metrics in the job summary. The ordinary validation job remains separate. Pins, permissions, and steps belong to the workflow, not this projection.
+After successful comparison, the job uploads native reference/candidate JSON and measurement SHAs in an attempt-specific artifact with short retention. It keeps no measurement history. The **📊 compare benchmarks** job output retains the native comparison table, failure annotations, and test summary. Capture uses the native default reporter. Comparison selects the native default and GitHub Actions reporters.
+
+The same workflow has a read-only benchmark job and a report job with comment-write permission. Reports support same-repository PRs only. Fork PR reports are unsupported. Same-repository branch authors are trusted repository collaborators who control the workflow and reporter. The [report composite action](../.github/actions/benchmark-report/action.yml) owns the artifact download and script invocation. The report job executes [benchmark-report.mjs](../.github/scripts/benchmark-report.mjs) from the exact event head SHA, without benchmark code, dependency installation, or caches.
+
+The report job requires successful benchmarks and non-empty artifact/base/head outputs. It downloads the exact producer artifact ID from the current run. Failed-report-only reruns skip the report if those outputs are missing. Output retention for that rerun mode is not guaranteed here. A full rerun produces a fresh artifact ID.
+
+The publisher requires non-empty sets of native JSON files with equal counts and the same safe workload IDs. It requires finite positive per-search means and measurement SHAs that match producer outputs. It checks that the PR remains open with the measured base/head before publication. Invalid, missing, ambiguous, detected stale, or superseded results leave the old comment unchanged. GitHub comment writes have no atomic compare-and-swap, so a PR update can race the final check and write.
+
+The publisher writes one table to its job summary and one bot-authored sticky comment. Rows use workload IDs, mean latency divided by four in ms/search, and signed `(head/base - 1) * 100` change. Positive change means slower. Results are advisory, not a performance gate or a statistical significance claim. The workflow, composite actions, and publisher own their executable contracts. Refresh this projection when those owners change.
 
 Reserve `.scratch/` for local development, never CI.
 

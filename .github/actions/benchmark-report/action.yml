@@ -1,0 +1,33 @@
+name: "📝 report benchmarks"
+description: "Download benchmark results and publish the report"
+
+inputs:
+  artifact-id:
+    description: "Results Artifact ID"
+    required: true
+  base-sha:
+    description: "Base commit SHA"
+    required: true
+  head-sha:
+    description: "Head commit SHA"
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: "📥 download results"
+      uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+      with:
+        artifact-ids: ${{ inputs.artifact-id }}
+        path: ${{ runner.temp }}/benchmark-results
+
+    - name: "📝 publish results"
+      uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+      env:
+        BASE_SHA: ${{ inputs.base-sha }}
+        HEAD_SHA: ${{ inputs.head-sha }}
+        RESULTS: ${{ runner.temp }}/benchmark-results
+      with:
+        script: |
+          const { publish } = await import(`${process.env.GITHUB_WORKSPACE}/.github/scripts/benchmark-report.mjs`);
+          await publish({ github, context, core });

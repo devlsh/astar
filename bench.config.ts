@@ -22,7 +22,7 @@ export default defineConfig(({ mode }) => {
             benchmarkBaseline:
               baseline === undefined || baseline === ''
                 ? null
-                : resolve(fileURLToPath(new URL('.', import.meta.url)), baseline, '.vitest/astar'),
+                : resolve(fileURLToPath(new URL('.', import.meta.url)), baseline, '.vitest/benchmarks'),
           },
         },
       })),

@@ -39,8 +39,8 @@ for (const workload of workloads) {
   let sink = 0;
 
   test(workload.name, async ({ bench }) => {
-    const baseline = `.vitest/astar/${selection}/${workload.id}.json`;
-    const candidate = `.vitest/astar/${selection}/current/${workload.id}.json`;
+    const baseline = `.vitest/benchmarks/${selection}/${workload.id}.json`;
+    const candidate = `.vitest/benchmarks/${selection}/current/${workload.id}.json`;
 
     const current = bench(
       'current (4 searches)',
