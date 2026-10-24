@@ -75,7 +75,7 @@
     "oxlint-tsgolint": "7.0.2005",
     "tsdown": "0.23.2",
     "typescript": "7.1.0-beta",
-    "vitest": "5.0.3"
+    "vitest": "5.0.5"
   },
   "devEngines": {
     "packageManager": {
