@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.0.2](https://github.com/devlsh/astar/compare/v5.0.1...v5.0.2) (2026-10-24)
+
+
+### Miscellaneous Chores
+
+* release 5.0.2 ([6a5166f](https://github.com/devlsh/astar/commit/6a5166fd48b38573f18db39aefec98176e3c0f47))
+
 ## [5.0.1](https://github.com/devlsh/astar/compare/v5.0.0...v5.0.1) (2026-10-24)
 
 
