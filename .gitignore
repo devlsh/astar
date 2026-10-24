@@ -14,7 +14,7 @@ coverage
 build/Release
 
 # node modules.
-node_modules/
+node_modules
 
 # outputs.
 dist/
@@ -33,7 +33,7 @@ dist/
 .vite
 .vitest
 
-# devenv.
+# local environment state.
 .devenv/
 .direnv/
 
@@ -44,8 +44,9 @@ dist/
 *.tsbuildinfo
 
 # local agent workflow artifacts.
-.worktrees/
-.scratch/
+.worktrees
+.scratch
+/docs/research
 /research
 /docs/plans
 /plans

@@ -1,6 +1,6 @@
 # A* Demo
 
-For demo work, read [Development](../docs/development.md) and [Agent Workflow](../docs/development.md#agent-workflow).
+For demo work, read [Development](../docs/development.md) and its [validation requirements](../docs/development.md#validation-requirements).
 
 ## Owners
 
@@ -29,6 +29,6 @@ Use [Local Development](../CONTRIBUTING.md#local-development) for environment se
 - `pnpm demo build` builds the demo with Vite.
 - `pnpm demo wrangler deploy --dry-run` validates native deployment packaging without deploying. Run it after `pnpm demo build` exactly as shown, without environment wrappers or additional environment variables. Build and dry-run are packaging checks, not runtime HTTP tests. Local checks do not verify custom-domain ownership, DNS, secrets, or environment protection.
 
-Select these checks with [Agent Workflow](../docs/development.md#agent-workflow) within caller authorization. For behavior changes, inspect the running interface for pointer painting, legal endpoint moves, elevation and search options, no-route feedback, clear/reset actions, resizing, renderer initialization, and HMR cleanup as affected. Completion requires the affected controls and lifecycle to behave as described, with each executed check and any gap reported. If startup or checks fail, resolve the failure at its executable owner or report the blocker; static checks alone do not prove canvas behavior. Do not bypass authentication failures with live operations.
+Select these checks with [Validation Requirements](../docs/development.md#validation-requirements) within caller authorization. For behavior changes, inspect the running interface for pointer painting, legal endpoint moves, elevation and search options, no-route feedback, clear/reset actions, resizing, renderer initialization, and HMR cleanup as affected. Completion requires the affected controls and lifecycle to behave as described, with each executed check and any gap reported. If startup or checks fail, resolve the failure at its executable owner or report the blocker; static checks alone do not prove canvas behavior. Do not bypass authentication failures with live operations.
 
 Demo checks are separate from library typechecking, tests, and packaging. When changing the library API consumed here, verify both owning seams.
