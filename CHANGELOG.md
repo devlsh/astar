@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.0.1](https://github.com/devlsh/astar/compare/v5.0.0...v5.0.1) (2026-10-24)
+
+
+### Bug Fixes
+
+* add native Vitest benchmarks and PR comparisons ([a59cd23](https://github.com/devlsh/astar/commit/a59cd23edef04b7d94b3dde38f851d5d95545655))
+
 ## [5.0.0](https://github.com/devlsh/astar/compare/v4.0.0...v5.0.0) (2026-10-05)
 
 
