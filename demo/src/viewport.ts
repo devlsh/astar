@@ -1,4 +1,5 @@
 import { type Container, type Rectangle } from 'pixi.js';
+
 import { type Vector } from '../../src';
 import { board } from './config';
 

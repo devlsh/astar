@@ -1,5 +1,6 @@
 import { search as publicSearch } from '@devlsh/astar';
 import { inject, test } from 'vitest';
+
 import { fixtures, select, type Suite } from './fixtures';
 
 declare module 'vitest' {

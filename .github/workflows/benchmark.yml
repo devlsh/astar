@@ -1,4 +1,4 @@
-name: "📊 benchmark"
+name: '📊 benchmark'
 
 on:
   pull_request:
@@ -12,49 +12,49 @@ concurrency:
 
 jobs:
   benchmark:
-    name: "📊 compare benchmarks"
+    name: '📊 compare benchmarks'
     runs-on: ubuntu-24.04
     timeout-minutes: 15
 
     steps:
-      - name: "📥 check out base"
+      - name: '📥 check out base'
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: ${{ github.event.pull_request.base.repo.full_name }}
           ref: ${{ github.event.pull_request.base.sha }}
           persist-credentials: false
 
-      - name: "⚙️ set up base node and pnpm"
+      - name: '⚙️ set up base node and pnpm'
         uses: devlsh/tools/github/setup@bf3f55e1475d89a786af188a3af49689be002cab # v1.4.0
 
-      - name: "📦 build base"
+      - name: '📦 build base'
         run: pnpm build
 
-      - name: "📂 preserve base output"
+      - name: '📂 preserve base output'
         run: |
           mkdir -p "$RUNNER_TEMP/astar-benchmark-base"
           cp -R dist/. "$RUNNER_TEMP/astar-benchmark-base/"
 
-      - name: "📥 check out head"
+      - name: '📥 check out head'
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: ${{ github.event.pull_request.head.repo.full_name }}
           ref: ${{ github.event.pull_request.head.sha }}
           persist-credentials: false
 
-      - name: "⚙️ set up head node and pnpm"
+      - name: '⚙️ set up head node and pnpm'
         uses: devlsh/tools/github/setup@bf3f55e1475d89a786af188a3af49689be002cab # v1.4.0
 
-      - name: "📂 stage base output"
+      - name: '📂 stage base output'
         run: |
           mkdir -p dist
           cp -R "$RUNNER_TEMP/astar-benchmark-base/." dist/
 
-      - name: "📊 capture base benchmark"
+      - name: '📊 capture base benchmark'
         run: pnpm bench:full --mode capture --reporter=default
 
-      - name: "📦 build head"
+      - name: '📦 build head'
         run: pnpm build
 
-      - name: "📊 compare benchmark"
+      - name: '📊 compare benchmark'
         run: pnpm bench:full --mode compare --reporter=default --reporter=github-actions

@@ -1,5 +1,5 @@
-import { rotate } from '../helpers';
 import { type SearchOptions } from '../../src/types';
+import { rotate } from '../helpers';
 import { cases as corridor } from './corridor';
 import { cases as maze } from './maze';
 import { randomCases, disconnected, corners } from './obstacles';

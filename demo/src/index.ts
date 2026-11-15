@@ -1,4 +1,5 @@
 import { init } from './init';
+
 import './style.css';
 
 const host = document.getElementById('canvas');

@@ -1,4 +1,5 @@
 import { GUI } from 'lil-gui';
+
 import { defaults, type Settings } from './config';
 
 interface Actions {

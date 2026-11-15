@@ -49,8 +49,9 @@ import { search, type Grid } from '@devlsh/astar';
  * Numbers >= 0 specify elevation.
  *
  * 0 = ground
- * -1 = blocked/no tile
- * >= 1 = elevated tile
+ * -1 = blocked/no tile.
+ *
+ * > = 1 = elevated tile.
  */
 const grid: Grid = [
   [0, 0, 0, 0],

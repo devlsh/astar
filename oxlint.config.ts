@@ -1,15 +1,7 @@
-import { defineConfig } from 'oxlint';
 import preset from '@devlsh/tools/oxlint';
+import { defineConfig } from 'oxlint';
 
 export default defineConfig({
   extends: [preset],
-  ignorePatterns: ['/CHANGELOG.md', 'dist/**', 'tests/grid.ts'],
-  overrides: [
-    {
-      files: ['*.config.ts'],
-      rules: {
-        'import/extensions': 'off',
-      },
-    },
-  ],
+  ignorePatterns: ['/CHANGELOG.md', 'tests/grid.ts'],
 });

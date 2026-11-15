@@ -1,10 +1,10 @@
-name: "🚀 release"
+name: '🚀 release'
 
 on:
   workflow_dispatch:
     inputs:
       operation:
-        description: "Operation"
+        description: 'Operation'
         required: true
         type: choice
         options:
@@ -19,7 +19,7 @@ concurrency:
 
 jobs:
   release:
-    name: "🏷️ prepare or create"
+    name: '🏷️ prepare or create'
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     permissions:
@@ -32,7 +32,7 @@ jobs:
       version: ${{ steps.release.outputs.version }}
 
     steps:
-      - name: "🛡️ validate release dispatch"
+      - name: '🛡️ validate release dispatch'
         shell: bash
         env:
           OPERATION: ${{ inputs.operation }}
@@ -44,7 +44,7 @@ jobs:
             *) echo "Operation must be prepare or publish" >&2; exit 1 ;;
           esac
 
-      - name: "🏷️ prepare or create release"
+      - name: '🏷️ prepare or create release'
         id: release
         uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
         with:
@@ -56,7 +56,7 @@ jobs:
           skip-github-pull-request: ${{ inputs.operation == 'publish' }}
 
   publish:
-    name: "📦 publish package"
+    name: '📦 publish package'
     needs: release
     if: inputs.operation == 'publish' && needs.release.outputs.release_created == 'true'
     runs-on: ubuntu-24.04
@@ -66,14 +66,14 @@ jobs:
       id-token: write
 
     steps:
-      - name: "📥 check out release"
+      - name: '📥 check out release'
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ needs.release.outputs.sha }}
           persist-credentials: false
 
-      - name: "⚙️ set up node and pnpm"
+      - name: '⚙️ set up node and pnpm'
         uses: devlsh/tools/github/setup@bf3f55e1475d89a786af188a3af49689be002cab # v1.4.0
 
-      - name: "📦 publish"
+      - name: '📦 publish'
         run: pnpm publish --access public --tag latest --provenance --no-git-checks

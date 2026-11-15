@@ -7,7 +7,7 @@ export default defineConfig({
   },
   deps: { neverBundle: true },
   format: 'esm',
-  platform: 'node',
+  platform: 'neutral',
   fixedExtension: true,
   outExtensions: () => ({
     js: '.mjs',

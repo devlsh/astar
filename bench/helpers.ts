@@ -1,7 +1,7 @@
 import { type Grid, type SearchOptions, type Vector } from '../src/types';
 
 /**
- * xorshift32 with unsigned output. Seeds and shuffle order define the corpus.
+ * Xorshift32 with unsigned output. Seeds and shuffle order define the corpus.
  */
 export function random(seed: number) {
   let state = seed;

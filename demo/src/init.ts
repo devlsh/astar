@@ -1,4 +1,5 @@
 import { Application } from 'pixi.js';
+
 import { colors, defaults } from './config';
 import { createControls } from './controls';
 import { createMap } from './map';

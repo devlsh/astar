@@ -1,4 +1,5 @@
 import { Container, Graphics } from 'pixi.js';
+
 import { search, type Vector } from '../../src';
 import { board, colors, type Settings } from './config';
 
