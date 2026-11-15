@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.0.3](https://github.com/devlsh/astar/compare/v5.0.2...v5.0.3) (2026-11-15)
+
+
+### Bug Fixes
+
+* correct diagonal heuristic and handle matching endpoints ([bc75eab](https://github.com/devlsh/astar/commit/bc75eab002f7fa32d6b18bce17c8dfbfe9b5bc22)), closes [#6](https://github.com/devlsh/astar/issues/6)
+
 ## [5.0.2](https://github.com/devlsh/astar/compare/v5.0.1...v5.0.2) (2026-10-24)
 
 
