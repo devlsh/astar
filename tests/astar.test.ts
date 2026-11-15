@@ -7,7 +7,7 @@ describe('search', () => {
       expect(() => {
         return search({
           from: [0, 0],
-          to: [0, 7],
+          to: [0, 0],
           // @ts-expect-error
           grid: null,
         });
@@ -18,7 +18,7 @@ describe('search', () => {
       expect(() => {
         return search({
           from: [0, 0],
-          to: [0, 7],
+          to: [0, 0],
           grid: [],
         });
       }).toThrow();
@@ -72,6 +72,43 @@ describe('search', () => {
   });
 
   describe('movement', () => {
+    test.concurrent('should find an eight-move diagonal path around obstacles', () => {
+      const grid = [
+        [0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, -1, 0, 0, 0, 0],
+        [0, 0, 0, -1, 0, 0, 0, 0],
+        [0, 0, 0, 0, -1, 0, 0, 0],
+        [0, 0, 0, 0, -1, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, -1, 0],
+        [0, 0, 0, 0, 0, 0, -1, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0],
+      ];
+
+      const path = search({
+        grid,
+        from: [7, 8],
+        to: [2, 1],
+        diagonal: true,
+      });
+
+      expect.assert(path !== null);
+
+      expect(path).toHaveLength(9);
+      expect(path[0]).toStrictEqual([7, 8]);
+      expect(path.at(-1)).toStrictEqual([2, 1]);
+
+      for (const [index, [x, y]] of path.entries()) {
+        expect(grid[y]?.[x]).toBe(0);
+
+        if (index > 0) {
+          const [previousX, previousY] = path[index - 1];
+
+          expect(Math.max(Math.abs(x - previousX), Math.abs(y - previousY))).toBe(1);
+        }
+      }
+    });
+
     test.concurrent('should pathfind vertically', () => {
       const path = search({
         from: [0, 0],
@@ -263,6 +300,60 @@ describe('search', () => {
   });
 
   describe('destination handling', () => {
+    test.concurrent('should return a singleton path without exploring when endpoints are equal', () => {
+      const path = search({
+        grid: [
+          [0, 0],
+          [0, 0],
+        ],
+        from: [0, 0],
+        to: [0, 0],
+        heuristic: () => {
+          throw new Error('Already at destination; no neighbor needs scoring');
+        },
+      });
+
+      expect(path).toStrictEqual([[0, 0]]);
+    });
+
+    test.concurrent('should reject equal endpoints on a blocked numeric tile', () => {
+      expect(
+        search({
+          grid: [[-1]],
+          from: [0, 0],
+          to: [0, 0],
+        }),
+      ).toBeNull();
+    });
+
+    test.concurrent('should accept equal endpoints on a blocked tile valid as a destination', () => {
+      const path = search({
+        grid: [
+          [
+            {
+              elevation: 0,
+              isLegal: false,
+              validAsDestination: true,
+            },
+          ],
+        ],
+        from: [0, 0],
+        to: [0, 0],
+      });
+
+      expect(path).toStrictEqual([[0, 0]]);
+    });
+
+    test.concurrent('should reject equal out-of-bounds endpoints', () => {
+      expect(
+        search({
+          grid: [[0]],
+          from: [-1, 0],
+          to: [-1, 0],
+        }),
+      ).toBeNull();
+    });
+
     test.concurrent('should pathfind if starting point is invalid tile', () => {
       const testGrid: Grid = [
         [-1, 5, 5, -1],

@@ -155,6 +155,10 @@ export function search(options: SearchOptions) {
     open = open.toSorted((a, b) => asc(a[1].f, b[1].f));
   }
 
+  if (options.from[0] === options.to[0] && options.from[1] === options.to[1]) {
+    return isIllegal(options.to, options.from, 0) ? null : [options.from];
+  }
+
   // And start traversing from the starting position.
   traverse([
     options.from,
